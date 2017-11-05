@@ -42,7 +42,7 @@ const dataDir = Path.resolve( __dirname, "../data" );
 
 
 suite( "require( 'file-essentials' ).mkdir", function() {
-	setup( function( done ) {
+	suiteSetup( function( done ) {
 		createDataDir( dataDir, done );
 	} );
 
