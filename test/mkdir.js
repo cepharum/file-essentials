@@ -70,16 +70,12 @@ suite( "require( 'file-essentials' ).mkdir", function() {
 		return mkdir( dataDir, [ "some", "deep", "folder-structure", "to.be", "cre ated" ] ).should.be.Promise().which.is.resolvedWith( Path.resolve( dataDir, "some/deep/folder-structure/to.be/cre ated" ) );
 	} );
 
-	test( "fails on creating multiple levels with segment containing slash", function() {
-		return mkdir( dataDir, [ "some", "deep", "folder/structure", "to.be", "cre ated" ] ).should.be.Promise().which.is.rejected();
-	} );
-
-	test( "fails on creating multiple levels with segment containing backslash", function() {
-		return mkdir( dataDir, [ "some", "deep", "folder\\structure", "to.be", "cre ated" ] ).should.be.Promise().which.is.rejected();
+	test( "fails on creating multiple levels with segment containing path separator", function() {
+		return mkdir( dataDir, [ "some", "deep", `folder${Path.sep}structure`, "to.be", "cre ated" ] ).should.be.Promise().which.is.rejected();
 	} );
 
 	test( "fails on creating multiple levels with segment containing colon", function() {
-		return mkdir( dataDir, [ "some", "deep", "folder\\structure", "to.be", "cre ated" ] ).should.be.Promise().which.is.rejected();
+		return mkdir( dataDir, [ "some", "deep", "folder:structure", "to.be", "cre ated" ] ).should.be.Promise().which.is.rejected();
 	} );
 
 	test( "fails on creating multiple levels with segment consisting of period, only", function() {
