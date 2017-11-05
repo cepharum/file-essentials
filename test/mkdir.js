@@ -77,4 +77,12 @@ suite( "require( 'file-essentials' ).mkdir", function() {
 	test( "fails on creating multiple levels with segment containing colon", function() {
 		return mkdir( dataDir, [ "some", "deep", "folder\\structure", "to.be", "cre ated" ] ).should.be.Promise().which.is.rejected();
 	} );
+
+	test( "fails on creating multiple levels with segment consisting of period, only", function() {
+		return mkdir( dataDir, [ "some", "deep", "folder-structure", ".", "cre ated" ] ).should.be.Promise().which.is.rejected();
+	} );
+
+	test( "fails on creating multiple levels with segment consisting of two periods, only", function() {
+		return mkdir( dataDir, [ "some", "deep", "folder-structure", "..", "cre ated" ] ).should.be.Promise().which.is.rejected();
+	} );
 } );
