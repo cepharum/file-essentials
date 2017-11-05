@@ -3,6 +3,7 @@
 a fast set of commonly used functions for processing files
 
 * Latest Release: [![Build Status](https://travis-ci.org/cepharum/file-essentials.svg?branch=master)](https://travis-ci.org/cepharum/file-essentials)
+* Current Development: [![Build Status](https://travis-ci.org/cepharum/file-essentials.svg?branch=develop)](https://travis-ci.org/cepharum/file-essentials)
 
 ## License
 
