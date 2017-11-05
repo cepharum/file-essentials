@@ -173,4 +173,93 @@ suite( "require( 'file-essentials' ).find", function() {
 				list.should.containEql( "node_modules" );
 			} );
 	} );
+
+	test( "provides depth level on every file to filter callback, too", function() {
+		return find( "..", {
+			filter: ( localName, absoluteName, stat, depth ) => depth < 2,
+		} )
+			.then( list => {
+				list.should.be.Array().which.is.not.empty();
+
+				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+
+				list.should.not.containEql( "lib/find.js" );
+				list.should.not.containEql( "test/.setup.js" );
+				list.should.containEql( "index.js" );
+				list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
+
+				list.should.containEql( "lib" );
+				list.should.containEql( "test" );
+				list.should.containEql( "" );
+				list.should.not.containEql( "node_modules/eslint-config-cepharum" );
+				list.should.containEql( "node_modules" );
+			} );
+	} );
+
+	test( "optionally limits result to minimum depth", function() {
+		return find( "..", {
+			minDepth: 2,
+		} )
+			.then( list => {
+				list.should.be.Array().which.is.not.empty();
+
+				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+
+				list.should.containEql( "lib/find.js" );
+				list.should.containEql( "test/.setup.js" );
+				list.should.not.containEql( "index.js" );
+				list.should.containEql( "node_modules/eslint-config-cepharum/index.js" );
+
+				list.should.not.containEql( "lib" );
+				list.should.not.containEql( "test" );
+				list.should.not.containEql( "" );
+				list.should.containEql( "node_modules/eslint-config-cepharum" );
+				list.should.not.containEql( "node_modules" );
+			} );
+	} );
+
+	test( "optionally limits result to maximum depth", function() {
+		return find( "..", {
+			maxDepth: 2,
+		} )
+			.then( list => {
+				list.should.be.Array().which.is.not.empty();
+
+				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+
+				list.should.containEql( "lib/find.js" );
+				list.should.containEql( "test/.setup.js" );
+				list.should.containEql( "index.js" );
+				list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
+
+				list.should.containEql( "lib" );
+				list.should.containEql( "test" );
+				list.should.containEql( "" );
+				list.should.containEql( "node_modules/eslint-config-cepharum" );
+				list.should.containEql( "node_modules" );
+			} );
+	} );
+
+	test( "optionally limits result to minimum and maximum depth", function() {
+		return find( "..", {
+			minDepth: 1,
+			maxDepth: 1,
+		} )
+			.then( list => {
+				list.should.be.Array().which.is.not.empty();
+
+				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+
+				list.should.not.containEql( "lib/find.js" );
+				list.should.not.containEql( "test/.setup.js" );
+				list.should.containEql( "index.js" );
+				list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
+
+				list.should.containEql( "lib" );
+				list.should.containEql( "test" );
+				list.should.not.containEql( "" );
+				list.should.not.containEql( "node_modules/eslint-config-cepharum" );
+				list.should.containEql( "node_modules" );
+			} );
+	} );
 } );
