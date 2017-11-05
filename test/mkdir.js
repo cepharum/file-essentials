@@ -51,7 +51,11 @@ suite( "require( 'file-essentials' ).mkdir", function() {
 	} );
 
 	test( "does not throw on invocation", function() {
-		( () => mkdir( dataDir, [] ) ).should.not.throw();
+		let promise;
+
+		( () => ( promise = mkdir( dataDir, [] ) ) ).should.not.throw();
+
+		return promise;
 	} );
 
 	test( "returns promise resolved on having created all folders in desired path name", function() {
