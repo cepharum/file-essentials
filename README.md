@@ -23,13 +23,29 @@ Inspects given file system element promising information on it. This method is a
 
 > In opposition to the genuine function `require( "fs" ).stat()` this method is resolving without object (value `null`) on inspecting a missing file instead of rejecting on error.
 
+This method is also exposed as `Stat`.
+
+> Every method is available via alias exposed for conveniently accessing it w/o clashing with local variables named equivalently, e.g.
+>
+> ```javascript
+> const { Stat } = require( "file-essentials" );
+> 
+> Stat( "some/folder" )
+>     .then( stat => stat.isDirectory() && Stat( "some/folder/file" ) )
+>     .then( stat => { } );
+> ```
+
 ### FileEssentials.read( pathName ) : Promise\<Buffer>
 
 Reads content from file and returns promise delivering content. This method is a simple promisified version of `require( "fs" ).readFile()`.
 
+This method is also exposed as `Read`.
+
 ### FileEssentials.write( pathName, content ) : Promise\<(string|Buffer)>
 
 Writes content to file promising content written to file. The content is promised as given. This method is a simple promisified version of `require( "fs" ).writeFile()`.
+
+This method is also exposed as `Write`.
 
 ### FileEssentials.find( baseFolder, [ options ] ) : Promise\<string[]>
 
@@ -49,11 +65,15 @@ Finds all elements in a folder. Supported options are
 * **minDepth**: Sets minimum depth level to be matched by any element included with returned list. Default is 0.
 * **maxDepth**: Sets maximum depth level to be matched by any element included with returned list. Default is `+Infinity`.
 
+This method is also exposed as `Find`.
+
 ### FileEssentials.mkdir( baseFolder, subFolder ) : Promise\<string>
 
 Ensures some given folder exists by successively creating all segments of a given path name in context of provided base folder. Second argument is either string providing path name relative to base folder to create. It may be array explicitly listing segments of that local path name, too.
 
 The method promises resulting absolute path name of eventually created.
+
+This method is also exposed as `MkDir`.
 
 ### FileEssentials.mkfile( baseFolder, [ options ] ) : Promise\<string>
 
@@ -69,6 +89,10 @@ This method promises object containing these properties on exclusive creation of
 * **uuid** is the unmapped UUIDv4 used.
 * **fd** is the handle to open file for writing data.
 
+This method is also exposed as `MkFile`.
+
 ### FileEssentials.rmdir( baseFolder ) : Promise\<string[]>
 
 Removes a given element. If the element is a folder all subordinated files and folders are removed, too. The method promises list of all removed elements on success.
+
+This method is also exposed as `RmDir`.
