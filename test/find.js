@@ -39,7 +39,7 @@ const { find } = require( "../" );
 suite( "require( 'file-essentials' ).find", function() {
 	this.timeout( 10000 );
 
-	setup( function() {
+	suiteSetup( function() {
 		process.chdir( __dirname );
 	} );
 
@@ -260,6 +260,41 @@ suite( "require( 'file-essentials' ).find", function() {
 				list.should.not.containEql( "" );
 				list.should.not.containEql( "node_modules/eslint-config-cepharum" );
 				list.should.containEql( "node_modules" );
+			} );
+	} );
+
+	test( "support optional converter for describing actually resulting elements", function() {
+		return find( "..", {
+			minDepth: 1,
+			maxDepth: 1,
+			converter: ( local, full, stat, depth ) => `${depth}: ${stat.isDirectory() ? local.split( "" ).reverse().join( "" ) : local}`,
+		} )
+			.then( list => {
+				list.should.be.Array().which.is.not.empty();
+
+				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+
+				list.should.not.containEql( "lib/find.js" );
+				list.should.not.containEql( "2: lib/find.js" );
+				list.should.not.containEql( "test/.setup.js" );
+				list.should.not.containEql( "2: test/.setup.js" );
+				list.should.not.containEql( "index.js" );
+				list.should.containEql( "1: index.js" );
+				list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
+				list.should.not.containEql( "3: node_modules/eslint-config-cepharum/index.js" );
+
+				list.should.not.containEql( "lib" );
+				list.should.not.containEql( "bil" );
+				list.should.containEql( "1: bil" );
+				list.should.not.containEql( "test" );
+				list.should.not.containEql( "tset" );
+				list.should.containEql( "1: tset" );
+				list.should.not.containEql( "" );
+				list.should.not.containEql( "node_modules/eslint-config-cepharum" );
+				list.should.not.containEql( "2: node_modules/eslint-config-cepharum" );
+				list.should.not.containEql( "node_modules" );
+				list.should.not.containEql( "seludom_edon" );
+				list.should.containEql( "1: seludom_edon" );
 			} );
 	} );
 } );
