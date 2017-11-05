@@ -41,11 +41,19 @@ const dataDir = Path.resolve( __dirname, "../data" );
 
 
 suite( "require( 'file-essentials' ).mkfile", function() {
+	const openFds = [];
+
 	suiteSetup( function() {
 		process.chdir( __dirname );
 
 		return rmdir( dataDir, { subsOnly: true } )
 			.then( () => mkdir( "..", "data" ) );
+	} );
+
+	suiteTeardown( function() {
+		for ( let i = 0, length = openFds.length; i < length; i++ ) {
+			File.closeSync( openFds[i] );
+		}
 	} );
 
 	test( "is a function", function() {
@@ -57,7 +65,7 @@ suite( "require( 'file-essentials' ).mkfile", function() {
 
 		( () => ( promise = mkfile( dataDir ) ) ).should.not.throw();
 
-		return promise.then( ( { fd } ) => File.closeSync( fd ) );
+		return promise.then( ( { fd } ) => openFds.push( fd ) );
 	} );
 
 	test( "returns promise resolved on having created unique file in desired path name", function() {
@@ -65,7 +73,7 @@ suite( "require( 'file-essentials' ).mkfile", function() {
 
 		promise.should.be.Promise().which.is.resolved();
 
-		return promise.then( ( { fd } ) => File.closeSync( fd ) );
+		return promise.then( ( { fd } ) => openFds.push( fd ) );
 	} );
 
 	test( "returns promise resolved with full pathname of created folder", function() {
@@ -79,7 +87,7 @@ suite( "require( 'file-essentials' ).mkfile", function() {
 
 				result.name.should.equal( Path.join( dataDir, result.uuid ) );
 
-				File.closeSync( result.fd );
+				openFds.push( result.fd );
 			} );
 	} );
 
@@ -103,7 +111,7 @@ suite( "require( 'file-essentials' ).mkfile", function() {
 			.then( result => {
 				Should( result ).be.Object().and.be.ok();
 
-				File.closeSync( result.fd );
+				openFds.push( result.fd );
 
 				result.name.should.equal( Path.join( dataDir, "this/is my/extra.path", result.uuid ) );
 			} );
@@ -116,7 +124,7 @@ suite( "require( 'file-essentials' ).mkfile", function() {
 			.then( result => {
 				Should( result ).be.Object().and.be.ok();
 
-				File.closeSync( result.fd );
+				openFds.push( result.fd );
 
 				result.name.should.equal( Path.join( dataDir, result.uuid + "mysuffix" ) );
 			} );
@@ -130,7 +138,7 @@ suite( "require( 'file-essentials' ).mkfile", function() {
 			.then( result => {
 				Should( result ).be.Object().and.be.ok();
 
-				File.closeSync( result.fd );
+				openFds.push( result.fd );
 
 				result.name.should.equal( Path.join( dataDir, "this/is my/extra.path", result.uuid + "mysuffix" ) );
 			} );
@@ -141,7 +149,7 @@ suite( "require( 'file-essentials' ).mkfile", function() {
 			uuidToPath: () => Path.join( "this/is my/fix-name" ),
 		} )
 			.then( ( { fd } ) => {
-				File.closeSync( fd );
+				openFds.push( fd );
 
 				return mkfile( dataDir, {
 					uuidToPath: () => Path.join( "this/is my/fix-name" ),
