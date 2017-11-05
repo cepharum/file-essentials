@@ -30,10 +30,17 @@
 
 module.exports = {
 	mkdir: require( "./lib/mkdir" ),
+	MkDir: require( "./lib/mkdir" ),
 	mkfile: require( "./lib/mkfile" ),
+	MkFile: require( "./lib/mkfile" ),
 	find: require( "./lib/find" ),
+	Find: require( "./lib/find" ),
 	rmdir: require( "./lib/rmdir" ),
+	RmDir: require( "./lib/rmdir" ),
 	read: require( "./lib/read" ),
+	Read: require( "./lib/read" ),
 	write: require( "./lib/write" ),
+	Write: require( "./lib/write" ),
 	stat: require( "./lib/stat" ),
+	Stat: require( "./lib/stat" ),
 };
