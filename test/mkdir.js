@@ -33,7 +33,7 @@ const Path = require( "path" );
 const { suite, test } = require( "mocha" );
 const Should = require( "should" );
 
-const { mkdir } = require( "../" );
+const { mkdir, rmdir } = require( "../" );
 
 const createDataDir = require( "./.setup" );
 
@@ -44,6 +44,10 @@ const dataDir = Path.resolve( __dirname, "../data" );
 suite( "require( 'file-essentials' ).mkdir", function() {
 	suiteSetup( function( done ) {
 		createDataDir( dataDir, done );
+	} );
+
+	suiteTeardown( function() {
+		return rmdir( "../data" );
 	} );
 
 	test( "is a function", function() {

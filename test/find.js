@@ -48,7 +48,11 @@ suite( "require( 'file-essentials' ).find", function() {
 	} );
 
 	test( "does not throw on invocation", function() {
-		return ( () => find() ).should.not.throw();
+		let promise;
+
+		( () => ( promise = find() ) ).should.not.throw();
+
+		return promise;
 	} );
 
 	test( "returns promise resolved on having enumerated all elements of given folder", function() {

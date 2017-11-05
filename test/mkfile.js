@@ -54,6 +54,8 @@ suite( "require( 'file-essentials' ).mkfile", function() {
 		for ( let i = 0, length = openFds.length; i < length; i++ ) {
 			File.closeSync( openFds[i] );
 		}
+
+		return rmdir( "../data" );
 	} );
 
 	test( "is a function", function() {

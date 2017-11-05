@@ -51,6 +51,10 @@ suite( "require( 'file-essentials' ).rmdir", function() {
 			);
 	} );
 
+	teardown( function() {
+		return rmdir( "../data" );
+	} );
+
 	test( "is a function", function() {
 		Should( rmdir ).be.a.Function().which.has.length( 1 );
 	} );
