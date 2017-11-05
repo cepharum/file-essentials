@@ -1,0 +1,34 @@
+{
+  "name": "file-essentials",
+  "version": "0.0.1",
+  "description": "a common set of filesystem helpers",
+  "main": "index.js",
+  "scripts": {
+    "test": "set NODE_ENV=test && mocha --ui tdd test",
+    "style": "eslint index.js lib/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cepharum/file-essentials.git"
+  },
+  "keywords": [
+    "files"
+  ],
+  "author": "Thomas Urban",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cepharum/file-essentials/issues"
+  },
+  "homepage": "https://github.com/cepharum/file-essentials#readme",
+  "devDependencies": {
+    "eslint": "^4.10.0",
+    "eslint-config-cepharum": "^1.0.2",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "mocha": "^4.0.1",
+    "should": "^13.1.3"
+  }
+}
