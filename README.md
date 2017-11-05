@@ -21,6 +21,8 @@ npm i -S file-essentials
 
 Inspects given file system element promising information on it. This method is a simple promisified version of `require( "fs" ).stat()`.
 
+> In opposition to the genuine function `require( "fs" ).stat()` this method is resolving without object (value `null`) on inspecting a missing file instead of rejecting on error.
+
 ### FileEssentials.read( pathName ) : Promise\<Buffer>
 
 Reads content from file and returns promise delivering content. This method is a simple promisified version of `require( "fs" ).readFile()`.
