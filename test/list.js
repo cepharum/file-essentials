@@ -70,6 +70,20 @@ suite( "require( 'file-essentials' ).list", function() {
 
 				entries.should.not.containEql( "." );
 				entries.should.not.containEql( ".." );
+				entries.should.containEql( ".gitignore" );
+				entries.should.containEql( "index.js" );
+				entries.should.containEql( "package.json" );
+			} );
+	} );
+
+	test( "omits hidden elements on demand", function() {
+		return list( "..", { noHidden: true } ).should.be.Promise().which.is.resolved()
+			.then( entries => {
+				Should( entries ).be.ok().and.an.Array().which.is.not.empty();
+
+				entries.should.not.containEql( "." );
+				entries.should.not.containEql( ".." );
+				entries.should.not.containEql( ".gitignore" );
 				entries.should.containEql( "index.js" );
 				entries.should.containEql( "package.json" );
 			} );

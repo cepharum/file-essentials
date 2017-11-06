@@ -39,7 +39,11 @@ This method is also exposed as `Stat`.
 
 Enumerates names of elements in current or explicitly selected folder. This method is a simple promisified version of `require( "fs" ).readdir()`.
 
-> In opposition to the original function this method does not retrieve `.` and `..`.
+> In opposition to the original function this method never retrieve `.` and `..`.
+
+The method supports options for customizing enumeration:
+
+* **noHidden** may be set true to exclude elements with leading period in name for being considered hidden.
 
 This method is also exposed as `List`.
 
