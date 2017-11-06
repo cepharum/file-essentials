@@ -35,6 +35,14 @@ This method is also exposed as `Stat`.
 >     .then( stat => { } );
 > ```
 
+### FileEssentials.list( [ pathName ] ) : Promise\<string[]>
+
+Enumerates names of elements in current or explicitly selected folder. This method is a simple promisified version of `require( "fs" ).readdir()`.
+
+> In opposition to the original function this method does not retrieve `.` and `..`.
+
+This method is also exposed as `List`.
+
 ### FileEssentials.read( pathName ) : Promise\<Buffer>
 
 Reads content from file and returns promise delivering content. This method is a simple promisified version of `require( "fs" ).readFile()`.
