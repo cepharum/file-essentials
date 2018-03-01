@@ -1,6 +1,6 @@
 {
   "name": "file-essentials",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "a common set of filesystem helpers",
   "main": "index.js",
   "scripts": {
