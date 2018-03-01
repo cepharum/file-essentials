@@ -114,7 +114,10 @@ suite( "require( 'file-essentials' ).find", function() {
 	} );
 
 	test( "promises path names of found elements satisfying custom filter", function() {
-		return find( "..", { filter: localName => localName.startsWith( "index.js" ) } )
+		return find( "..", {
+			filter: localName => localName.startsWith( "index.js" ),
+			skipFilteredFolder: false,
+		} )
 			.then( list => {
 				list.should.be.Array().which.is.not.empty();
 
@@ -131,6 +134,7 @@ suite( "require( 'file-essentials' ).find", function() {
 		return find( "..", {
 			filter: localName => localName.startsWith( "index.js" ),
 			qualified: true,
+			skipFilteredFolder: false,
 		} )
 			.then( list => {
 				list.should.be.Array().which.is.not.empty();
@@ -147,6 +151,7 @@ suite( "require( 'file-essentials' ).find", function() {
 	test( "provides absolute path name to filter callback on finding local path names, too", function() {
 		return find( "..", {
 			filter: ( localName, absoluteName ) => Path.relative( Path.resolve( ".." ), absoluteName ).startsWith( "index.js" ),
+			skipFilteredFolder: false,
 		} )
 			.then( list => {
 				list.should.be.Array().which.is.not.empty();
@@ -157,6 +162,23 @@ suite( "require( 'file-essentials' ).find", function() {
 				list.should.not.containEql( "test/.setup.js" );
 				list.should.containEql( "index.js" );
 				list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
+			} );
+	} );
+
+	test( "does not check filter on provided pathname itself", function() {
+		return find( "..", {
+			filter: localName => {
+				localName.should.be.String().which.is.not.empty();
+				return true;
+			},
+		} )
+			.then( () => {
+				return find( "..", {
+					filter: localName => {
+						localName.should.be.String().which.is.not.empty();
+					},
+					skipFilteredFolder: false,
+				} );
 			} );
 	} );
 
@@ -176,9 +198,41 @@ suite( "require( 'file-essentials' ).find", function() {
 
 				list.should.containEql( "lib" );
 				list.should.containEql( "test" );
-				list.should.containEql( "" );
+				list.should.containEql( "." );
 				list.should.containEql( "node_modules/eslint-config-cepharum" );
 				list.should.containEql( "node_modules" );
+			} );
+	} );
+
+	test( "does not descend into filtered folders by default", function() {
+		return find( "..", {
+			filter: ( localName, absoluteName, stat ) => stat.isDirectory() ? localName === "lib" : localName.endsWith( "rmdir.js" ),
+		} )
+			.then( list => {
+				list.should.be.Array().which.has.length( 3 );
+
+				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+
+				list.should.containEql( "." );
+				list.should.containEql( "lib" );
+				list.should.containEql( "lib/rmdir.js" );
+			} );
+	} );
+
+	test( "descends into filtered folders on explicit demand", function() {
+		return find( "..", {
+			filter: ( localName, absoluteName, stat ) => stat.isDirectory() ? localName === "lib" : localName.endsWith( "rmdir.js" ),
+			skipFilteredFolder: false,
+		} )
+			.then( list => {
+				list.should.be.Array().which.has.length( 4 );
+
+				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+
+				list.should.containEql( "." );
+				list.should.containEql( "lib" );
+				list.should.containEql( "lib/rmdir.js" );
+				list.should.containEql( "test/rmdir.js" );
 			} );
 	} );
 
@@ -198,7 +252,7 @@ suite( "require( 'file-essentials' ).find", function() {
 
 				list.should.containEql( "lib" );
 				list.should.containEql( "test" );
-				list.should.containEql( "" );
+				list.should.containEql( "." );
 				list.should.not.containEql( "node_modules/eslint-config-cepharum" );
 				list.should.containEql( "node_modules" );
 			} );
@@ -220,7 +274,7 @@ suite( "require( 'file-essentials' ).find", function() {
 
 				list.should.not.containEql( "lib" );
 				list.should.not.containEql( "test" );
-				list.should.not.containEql( "" );
+				list.should.not.containEql( "." );
 				list.should.containEql( "node_modules/eslint-config-cepharum" );
 				list.should.not.containEql( "node_modules" );
 			} );
@@ -242,7 +296,7 @@ suite( "require( 'file-essentials' ).find", function() {
 
 				list.should.containEql( "lib" );
 				list.should.containEql( "test" );
-				list.should.containEql( "" );
+				list.should.containEql( "." );
 				list.should.containEql( "node_modules/eslint-config-cepharum" );
 				list.should.containEql( "node_modules" );
 			} );
@@ -265,44 +319,98 @@ suite( "require( 'file-essentials' ).find", function() {
 
 				list.should.containEql( "lib" );
 				list.should.containEql( "test" );
-				list.should.not.containEql( "" );
+				list.should.not.containEql( "." );
 				list.should.not.containEql( "node_modules/eslint-config-cepharum" );
 				list.should.containEql( "node_modules" );
 			} );
 	} );
 
-	test( "support optional converter for describing actually resulting elements", function() {
+	test( "never descends beyond selected maxDepth", function() {
+		return find( "..", {
+			filter: ( localName, absoluteName, stat, level ) => {
+				level.should.be.belowOrEqual( 1 );
+			},
+			skipFilteredFolder: false,
+			maxDepth: 1,
+		} )
+			.then( () => {
+				return find( "..", {
+					filter: ( localName, absoluteName, stat, level ) => {
+						level.should.be.belowOrEqual( 1 );
+						return true;
+					},
+					maxDepth: 1,
+				} );
+			} );
+	} );
+
+	test( "supports optional converter for describing actually resulting elements", function() {
 		return find( "..", {
 			minDepth: 1,
 			maxDepth: 1,
-			converter: ( local, full, stat, depth ) => `${depth}: ${stat.isDirectory() ? local.split( "" ).reverse().join( "" ) : local}`,
 		} )
 			.then( list => {
 				list.should.be.Array().which.is.not.empty();
 
-				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+				list
+					.forEach( result => {
+						result.should.be.String()
+							.and.not.match( /^\d+:\s+\S.+$/ );
+					} );
+			} )
+			.then( () => find( "..", {
+				minDepth: 1,
+				maxDepth: 1,
+				converter: ( local, full, stat, depth ) => `${depth}: ${stat.isDirectory() ? local.split( "" ).reverse().join( "" ) : local}`,
+			} ) )
+			.then( list => {
+				list.should.be.Array().which.is.not.empty();
 
-				list.should.not.containEql( "lib/find.js" );
-				list.should.not.containEql( "2: lib/find.js" );
-				list.should.not.containEql( "test/.setup.js" );
-				list.should.not.containEql( "2: test/.setup.js" );
-				list.should.not.containEql( "index.js" );
-				list.should.containEql( "1: index.js" );
-				list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
-				list.should.not.containEql( "3: node_modules/eslint-config-cepharum/index.js" );
+				list
+					.forEach( result => {
+						result.should.be.String()
+							.and.match( /^\d+:\s+\S.+$/ );
+					} );
+			} );
+	} );
 
-				list.should.not.containEql( "lib" );
-				list.should.not.containEql( "bil" );
-				list.should.containEql( "1: bil" );
-				list.should.not.containEql( "test" );
-				list.should.not.containEql( "tset" );
-				list.should.containEql( "1: tset" );
-				list.should.not.containEql( "" );
-				list.should.not.containEql( "node_modules/eslint-config-cepharum" );
-				list.should.not.containEql( "2: node_modules/eslint-config-cepharum" );
-				list.should.not.containEql( "node_modules" );
-				list.should.not.containEql( "seludom_edon" );
-				list.should.containEql( "1: seludom_edon" );
+	test( "supports optional converter preventing matches from being collected as results", function() {
+		return find( "..", {
+			minDepth: 1,
+			maxDepth: 3,
+			filter: localName => !localName.startsWith( "node_modules" ),
+			converter: ( local, full, stat, depth ) => `${depth}`,
+		} )
+			.then( allMatches => {
+				allMatches.should.be.Array().which.is.not.empty();
+
+				allMatches
+					.forEach( result => {
+						result.should.be.String().and.match( /^[1-3]$/ );
+					} );
+
+				allMatches.should.containEql( "2" );
+				allMatches.should.containEql( "3" );
+
+				return find( "..", {
+					minDepth: 1,
+					maxDepth: 3,
+					filter: localName => !localName.startsWith( "node_modules" ),
+					converter: ( local, full, stat, depth ) => depth > 1 ? null : `${depth}`,
+				} )
+					.then( reducedMatches => {
+						reducedMatches.should.be.Array().which.is.not.empty();
+
+						reducedMatches
+							.forEach( result => {
+								result.should.be.String().and.match( /^[1-3]$/ );
+							} );
+
+						reducedMatches.should.not.containEql( "2" );
+						reducedMatches.should.not.containEql( "3" );
+
+						reducedMatches.length.should.be.below( allMatches.length );
+					} );
 			} );
 	} );
 } );

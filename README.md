@@ -39,7 +39,7 @@ This method is also exposed as `Stat`.
 
 Enumerates names of elements in current or explicitly selected folder. This method is a simple promisified version of `require( "fs" ).readdir()`.
 
-> In opposition to the original function this method never retrieve `.` and `..`.
+> In opposition to the original function this method never retrieves `.` and `..`.
 
 The method supports options for customizing enumeration:
 
@@ -64,7 +64,9 @@ This method is also exposed as `Write`.
 Finds all elements in a folder. Supported options are
 
 * **depthFirst**: Set true for resulting list ordered with deeper elements preceding more shallow elements. This is useful e.g. on removing elements.
+
 * **qualified**: Set true to get absolute path names of all matching elements. Otherwise the resulting list contains path names related to given base folder.
+
 * **filter**: Provide a function invoked on every element for deciding whether to include in resulting list or not. The function is invoked with
 
    * any basically found element's path name relative to base folder,
@@ -72,10 +74,19 @@ Finds all elements in a folder. Supported options are
    * the `Stats` instance retrieved on calling `fs.stat()` on element and
    * the depth of current element (0 is selected folder, 1 is all its children, etc.)
 
-  The function is expected to return boolean with true deciding to include the element with resulting list and false to ignore it. It also may promise that result value. 
-* **converter** may be callback function invoked with equivalent signature as described on **filter** before. The callback is mapping all found elements to some data eventually collected and included with promised result list. Any return value is collected in resulting list instead of either element's relative or absolute path name. Returning promise is okay, but doesn't defer processing further elements implicitly.
+  The function is expected to return boolean with `true` or `false`. It also may promise that result value. By returning or promising `true` the tested file or folder is considered match and gets collected in resulting list. By returning or promising `false` the tested file or folder is not collected. In addition, **find()**'s iteration isn't descending into any tested folder **filter** is returning `false` on and unless **skipFilteredFolder** is set `false` explicitly.
+  
+* **converter** may be callback function invoked with equivalent signature as described on **filter** before. The callback is mapping all found elements to some data eventually collected and included with promised result list. The return value is collected in resulting list instead of element's relative or absolute path name. By returning `null`, `undefined` or empty string here, no data is collected in result list on related file or folder.
+
+  Returning promise is okay, but in opposition to **filter** this doesn't defer processing of further elements implicitly.
+  
+  > By combining **filter** and **converter** it is possible to control what folders to descend into with **filter** and select files or folders to be part of resulting list with **converter**.
+
 * **minDepth**: Sets minimum depth level to be matched by any element included with returned list. Default is 0.
+
 * **maxDepth**: Sets maximum depth level to be matched by any element included with returned list. Default is `+Infinity`.
+
+* **skipFilteredFolders**: This option is set by default to prevent **FileEssentials.find()** from descending into subfolders dropped by **filter** described before. It may be cleared explicitly to force descending into such subfolders even though excluding the subfolder from result itself.
 
 This method is also exposed as `Find`.
 
