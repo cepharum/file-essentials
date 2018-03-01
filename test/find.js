@@ -413,4 +413,29 @@ suite( "require( 'file-essentials' ).find", function() {
 					} );
 			} );
 	} );
+
+	test( "exposes fresh context to every invocation of filter", function() {
+		return find( "..", {
+			minDepth: 1,
+			maxDepth: 3,
+			filter: function( localName ) {
+				this.should.be.Object().which.is.empty();
+
+				this.cached = localName;
+			},
+		} );
+	} );
+
+	test( "exposes same context to invocations of filter and converter regarding same file/folder", function() {
+		return find( "..", {
+			minDepth: 1,
+			maxDepth: 3,
+			filter: function( localName ) {
+				this.cached = localName.toUpperCase();
+			},
+			converter: function( localName ) {
+				this.cached.should.be.String().which.is.equal( localName.toUpperCase() );
+			},
+		} );
+	} );
 } );
