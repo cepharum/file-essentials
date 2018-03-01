@@ -33,7 +33,7 @@ const Path = require( "path" );
 const { suite, test } = require( "mocha" );
 const Should = require( "should" );
 
-const { mkdir, rmdir } = require( "../" );
+const { mkdir, rmdir, write } = require( "../" );
 
 const createDataDir = require( "./.setup" );
 
@@ -72,6 +72,39 @@ suite( "require( 'file-essentials' ).mkdir", function() {
 
 	test( "succeeds on creating multiple levels", function() {
 		return mkdir( dataDir, [ "some", "deep", "folder-structure", "to.be", "cre ated" ] ).should.be.Promise().which.is.resolvedWith( Path.resolve( dataDir, "some/deep/folder-structure/to.be/cre ated" ) );
+	} );
+
+	test( "succeeds on request for creating existing directory", function() {
+		return mkdir( dataDir, [ "another", "deep", "folder-structure", "to.be", "cre ated" ] )
+			.then( () => {
+				return mkdir( dataDir, [ "another", "deep", "folder-structure", "to.be", "cre ated" ] ).should.be.Promise().which.is.resolvedWith( Path.resolve( dataDir, "another/deep/folder-structure/to.be/cre ated" ) );
+			} );
+	} );
+
+	test( "fails on request for creating directory due to found existing non-directory at start of path to subfolder", function() {
+		return write( Path.resolve( dataDir, "file" ), "" )
+			.then( () => {
+				return mkdir( dataDir, [ "file", "deep", "folder-structure", "to.be", "cre ated" ] )
+					.should.be.a.Promise().which.is.rejected();
+			} );
+	} );
+
+	test( "fails on request for creating directory due to found existing non-directory at end of path to subfolder", function() {
+		return mkdir( dataDir, [ "yet", "another", "deep", "folder-structure", "to.be" ] )
+			.then( folder => write( Path.resolve( folder, "failing" ), "" ) )
+			.then( () => {
+				return mkdir( dataDir, [ "yet", "another", "deep", "folder-structure", "to.be", "failing" ] )
+					.should.be.a.Promise().which.is.rejected();
+			} );
+	} );
+
+	test( "fails on request for creating directory due to found existing non-directory at inner segment of path to subfolder", function() {
+		return mkdir( dataDir, [ "yet", "another", "deep" ] )
+			.then( folder => write( Path.resolve( folder, "folder" ), "" ) )
+			.then( () => {
+				return mkdir( dataDir, [ "yet", "another", "deep", "folder", "to.be", "failing" ] )
+					.should.be.a.Promise().which.is.rejected();
+			} );
 	} );
 
 	test( "fails on creating multiple levels with segment containing path separator", function() {
