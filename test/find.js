@@ -438,4 +438,62 @@ suite( "require( 'file-essentials' ).find", function() {
 			},
 		} );
 	} );
+
+	test( "exposes method `cancel()` in context provided on invoking filter or converter for cancelling iteration", function() {
+		// don't cancel iteration
+		return find( "..", {
+			minDepth: 1,
+			maxDepth: 3,
+			filter: function() {
+				this.cancel.should.be.Function().which.has.length( 0 );
+				return true;
+			},
+			converter: function( localName ) {
+				this.cancel.should.be.Function().which.has.length( 0 );
+				return localName;
+			},
+		} )
+			.then( list => {
+				list.should.be.Array();
+				list.length.should.be.above( 3 );
+
+				let count = 0;
+
+				// cancel iteration in filter callback
+				return find( "..", {
+					minDepth: 1,
+					maxDepth: 3,
+					filter: function() {
+						if ( ++count === 3 ) {
+							this.cancel();
+						}
+
+						return true;
+					},
+				} );
+			} )
+			.then( list => {
+				list.should.be.Array();
+				list.length.should.be.equal( 3 );
+
+				let count = 0;
+
+				// cancel iteration in converter callback
+				return find( "..", {
+					minDepth: 1,
+					maxDepth: 3,
+					converter: function( localName ) {
+						if ( ++count === 3 ) {
+							this.cancel();
+						}
+
+						return localName;
+					},
+				} );
+			} )
+			.then( list => {
+				list.should.be.Array();
+				list.length.should.be.equal( 3 );
+			} );
+	} );
 } );
