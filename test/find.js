@@ -130,6 +130,38 @@ suite( "require( 'file-essentials' ).find", function() {
 					list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
 				} );
 		} );
+
+		test( "is rejected cancelling iteration when filter callback is throwing", function() {
+			let matchCount = 0;
+
+			return find( "..", {
+				filter: () => {
+					throw new Error( "!!EXCEPTION!!" );
+				},
+				converter: name => {
+					matchCount++;
+					return name;
+				},
+			} )
+				.should.be.rejectedWith( new Error( "!!EXCEPTION!!" ) )
+				.then( () => matchCount.should.be.equal( 1 ) ); // due to invoking converter on base folder "..", but not invoking filter on it
+		} );
+
+		test( "is rejected cancelling iteration when converter callback is throwing", function() {
+			let matchCount = 0;
+
+			return find( "..", {
+				filter: () => {
+					matchCount++;
+					return true;
+				},
+				converter: () => {
+					throw new Error( "!!EXCEPTION!!" );
+				},
+			} )
+				.should.be.rejectedWith( new Error( "!!EXCEPTION!!" ) )
+				.then( () => matchCount.should.be.equal( 0 ) ); // due to invoking converter on base folder prior to invoking filter for the first time
+		} );
 	} );
 
 	suite( "returns readable stream instead of promise on demand which", function() {
@@ -415,14 +447,42 @@ suite( "require( 'file-essentials' ).find", function() {
 					},
 				} );
 
-				stream.on( "error", e => {
-					console.log( "error" );
-					error = e;
-				} );
+				let matchCount = 0;
+
+				stream.on( "data", () => matchCount++ );
+				stream.on( "error", e => { error = e; } );
 				stream.on( "end", () => {
-					console.log( "end", error );
+					matchCount.should.be.equal( 1 ); // due to matching base folder w/o invoking filter callback on it
+
 					resolve( error );
 				} );
+			} )
+				.then( error => {
+					error.should.be.instanceOf( Error );
+				} );
+		} );
+
+		test( "emits error and cancels iteration when converter callback is throwing", function() {
+			return new Promise( resolve => {
+				let error = null;
+				const stream = find( "..", {
+					stream: true,
+					converter: function() {
+						throw new Error( "!!EXCEPTION!!" );
+					},
+				} );
+
+				let matchCount = 0;
+
+				stream.on( "data", () => matchCount++ );
+				stream.on( "error", e => { error = e; } );
+				stream.on( "end", () => {
+					matchCount.should.be.equal( 0 ); // due to invoking converter callback instantly on selected base folder
+
+					resolve( error );
+				} );
+
+				stream.resume();
 			} )
 				.then( error => {
 					error.should.be.instanceOf( Error );
