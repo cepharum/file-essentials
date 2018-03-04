@@ -60,7 +60,7 @@ suite( "require( 'file-essentials' ).rmdir", function() {
 	} );
 
 	test( "does not throw on invocation", function() {
-		let promise;
+		let promise = null;
 
 		( () => ( promise = rmdir( dataDir ) ) ).should.not.throw();
 
