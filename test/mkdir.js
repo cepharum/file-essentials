@@ -77,7 +77,19 @@ suite( "require( 'file-essentials' ).mkdir", function() {
 	test( "succeeds on request for creating existing directory", function() {
 		return mkdir( dataDir, [ "another", "deep", "folder-structure", "to.be", "cre ated" ] )
 			.then( () => {
-				return mkdir( dataDir, [ "another", "deep", "folder-structure", "to.be", "cre ated" ] ).should.be.Promise().which.is.resolvedWith( Path.resolve( dataDir, "another/deep/folder-structure/to.be/cre ated" ) );
+				return mkdir( dataDir, [ "another", "deep", "folder-structure", "to.be", "cre ated" ] )
+					.should.be.Promise()
+					.which.is.resolvedWith( Path.resolve( dataDir, "another/deep/folder-structure/to.be/cre ated" ) );
+			} )
+			.then( () => {
+				return mkdir( dataDir, "another/deep/folder-structure/to.be/cre ated" )
+					.should.be.Promise()
+					.which.is.resolvedWith( Path.resolve( dataDir, "another/deep/folder-structure/to.be/cre ated" ) );
+			} )
+			.then( () => {
+				return mkdir( dataDir, "another\\deep\\folder-structure\\to.be\\cre ated" )
+					.should.be.Promise()
+					.which.is.resolvedWith( Path.resolve( dataDir, "another/deep/folder-structure/to.be/cre ated" ) );
 			} );
 	} );
 
