@@ -29,6 +29,7 @@
 "use strict";
 
 const Path = require( "path" );
+const { Readable } = require( "stream" );
 
 const { suite, test } = require( "mocha" );
 const Should = require( "should" );
@@ -55,79 +56,378 @@ suite( "require( 'file-essentials' ).find", function() {
 		return promise;
 	} );
 
-	test( "returns promise resolved on having enumerated all elements of given folder", function() {
-		return find( ".." ).should.be.Promise().which.is.resolved();
+	suite( "returns promise by default which", function() {
+		test( "is resolved on having enumerated all elements of given folder", function() {
+			return find( ".." ).should.be.Promise().which.is.resolved()
+				.then( list => {
+					list.should.be.Array().which.is.not.empty();
+				} );
+		} );
+
+		test( "is resolved with path names of all found elements", function() {
+			return find( ".." )
+				.then( list => {
+					list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+
+					list.should.containEql( "lib/find.js" );
+					list.should.containEql( "test/.setup.js" );
+					list.should.containEql( "index.js" );
+					list.should.containEql( "node_modules/eslint-config-cepharum/index.js" );
+				} );
+		} );
+
+		test( "is resolved with path names of all found elements in depth-last order by default", function() {
+			return find( ".." )
+				.then( list => {
+					list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+
+					const a = list.indexOf( "lib" );
+					const b = list.indexOf( "lib/find.js" );
+
+					( a < b ).should.be.true();
+				} );
+		} );
+
+		test( "is resolved with path names of all found elements in depth-first order on demand", function() {
+			return find( "..", { depthFirst: true } )
+				.then( list => {
+					list.should.be.Array().which.is.not.empty();
+
+					list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+
+					const a = list.indexOf( "lib" );
+					const b = list.indexOf( "lib/find.js" );
+
+					( a < b ).should.be.false();
+				} );
+		} );
+
+		test( "is resolved with absolute path names of all found elements on demand", function() {
+			return find( "..", { qualified: true } )
+				.then( list => {
+					list.should.be.Array().which.is.not.empty();
+
+					list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+
+					list.should.not.containEql( "lib/find.js" );
+					list.should.containEql( Path.resolve( "..", "lib/find.js" ).replace( /\\/g, Path.posix.sep ) );
+				} );
+		} );
+
+		test( "is resolved with path names of found elements satisfying custom filter", function() {
+			return find( "..", {
+				filter: localName => localName.startsWith( "index.js" ),
+				skipFilteredFolder: false,
+			} )
+				.then( list => {
+					list.should.be.Array().which.is.not.empty();
+
+					list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+
+					list.should.not.containEql( "lib/find.js" );
+					list.should.not.containEql( "test/.setup.js" );
+					list.should.containEql( "index.js" );
+					list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
+				} );
+		} );
 	} );
 
-	test( "promises path names of all found elements", function() {
-		return find( ".." )
-			.then( list => {
-				list.should.be.Array().which.is.not.empty();
+	suite( "returns readable stream instead of promise on demand which", function() {
+		test( "is readable", function() {
+			return new Promise( resolve => {
+				const stream = find( "..", { stream: true } );
 
-				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+				stream.should.not.be.Promise().and.be.instanceOf( Readable );
 
-				list.should.containEql( "lib/find.js" );
-				list.should.containEql( "test/.setup.js" );
-				list.should.containEql( "index.js" );
-				list.should.containEql( "node_modules/eslint-config-cepharum/index.js" );
+				stream.once( "end", resolve );
+				stream.resume();
 			} );
-	} );
+		} );
 
-	test( "promises path names of all found elements in depth-last order by default", function() {
-		return find( ".." )
-			.then( list => {
-				list.should.be.Array().which.is.not.empty();
+		test( "is exposing path names of found elements one by one", function() {
+			return new Promise( resolve => {
+				const stream = find( "..", { stream: true } );
+				const list = [];
 
-				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+				stream.should.not.be.Promise().and.be.instanceOf( Readable );
 
-				const a = list.indexOf( "lib" );
-				const b = list.indexOf( "lib/find.js" );
+				stream.once( "end", () => {
+					const normalized = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
 
-				( a < b ).should.be.true();
+					normalized.should.containEql( "lib/find.js" );
+					normalized.should.containEql( "test/.setup.js" );
+					normalized.should.containEql( "index.js" );
+					normalized.should.containEql( "node_modules/eslint-config-cepharum/index.js" );
+
+					resolve();
+				} );
+
+				stream.on( "data", name => {
+					name.should.be.String().which.is.not.empty();
+					list.push( name );
+				} );
 			} );
-	} );
+		} );
 
-	test( "promises path names of all found elements in depth-first order on demand", function() {
-		return find( "..", { depthFirst: true } )
-			.then( list => {
-				list.should.be.Array().which.is.not.empty();
+		test( "is exposing path names in depth-last order by default", function() {
+			return new Promise( resolve => {
+				const stream = find( "..", { stream: true } );
+				const list = [];
 
-				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+				stream.should.not.be.Promise().and.be.instanceOf( Readable );
 
-				const a = list.indexOf( "lib" );
-				const b = list.indexOf( "lib/find.js" );
+				stream.once( "end", () => {
+					const normalized = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
 
-				( a < b ).should.be.false();
+					const a = normalized.indexOf( "lib" );
+					const b = normalized.indexOf( "lib/find.js" );
+
+					( a < b ).should.be.true();
+
+					resolve();
+				} );
+
+				stream.on( "data", name => {
+					name.should.be.String().which.is.not.empty();
+					list.push( name );
+				} );
 			} );
-	} );
+		} );
 
-	test( "promises absolute path names of all found elements on demand", function() {
-		return find( "..", { qualified: true } )
-			.then( list => {
-				list.should.be.Array().which.is.not.empty();
+		test( "is exposing path names in depth-first order on demand", function() {
+			return new Promise( resolve => {
+				const stream = find( "..", { stream: true, depthFirst: true } );
+				const list = [];
 
-				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+				stream.should.not.be.Promise().and.be.instanceOf( Readable );
 
-				list.should.not.containEql( "lib/find.js" );
-				list.should.containEql( Path.resolve( "..", "lib/find.js" ).replace( /\\/g, Path.posix.sep ) );
+				stream.once( "end", () => {
+					const normalized = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+
+					const a = normalized.indexOf( "lib" );
+					const b = normalized.indexOf( "lib/find.js" );
+
+					( a < b ).should.be.false();
+
+					resolve();
+				} );
+
+				stream.on( "data", name => {
+					name.should.be.String().which.is.not.empty();
+					list.push( name );
+				} );
 			} );
-	} );
+		} );
 
-	test( "promises path names of found elements satisfying custom filter", function() {
-		return find( "..", {
-			filter: localName => localName.startsWith( "index.js" ),
-			skipFilteredFolder: false,
-		} )
-			.then( list => {
-				list.should.be.Array().which.is.not.empty();
+		test( "is exposing absolute path names of all found elements on demand", function() {
+			return new Promise( resolve => {
+				const stream = find( "..", { stream: true, qualified: true } );
+				const list = [];
 
-				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+				stream.should.not.be.Promise().and.be.instanceOf( Readable );
 
-				list.should.not.containEql( "lib/find.js" );
-				list.should.not.containEql( "test/.setup.js" );
-				list.should.containEql( "index.js" );
-				list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
+				stream.once( "end", () => {
+					const normalized = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+
+					normalized.should.not.containEql( "lib/find.js" );
+					normalized.should.containEql( Path.resolve( "..", "lib/find.js" ).replace( /\\/g, Path.posix.sep ) );
+
+					resolve();
+				} );
+
+				stream.on( "data", name => {
+					name.should.be.String().which.is.not.empty();
+					list.push( name );
+				} );
 			} );
+		} );
+
+		test( "is exposing path names of found elements satisfying custom filter, only", function() {
+			return new Promise( resolve => {
+				const stream = find( "..", {
+					stream: true,
+					filter: localName => localName.startsWith( "index.js" ),
+					skipFilteredFolder: false,
+				} );
+				const list = [];
+
+				stream.should.not.be.Promise().and.be.instanceOf( Readable );
+
+				stream.once( "end", () => {
+					const normalized = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+
+					normalized.should.not.containEql( "lib/find.js" );
+					normalized.should.not.containEql( "test/.setup.js" );
+					normalized.should.containEql( "index.js" );
+					normalized.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
+
+					resolve();
+				} );
+
+				stream.on( "data", name => {
+					name.should.be.String().which.is.not.empty();
+					list.push( name );
+				} );
+			} );
+		} );
+
+		test( "can be paused resulting in paused iteration, too", function() {
+			return new Promise( resolve => {
+				const list = [];
+				let pausedBefore = false;
+
+				const stream = find( "..", {
+					stream: true,
+					filter: name => {
+						list.push( { type: "filter", name } );
+						return true;
+					},
+					converter: name => {
+						list.push( { type: "converter", name } );
+						return name;
+					},
+				} );
+
+				stream.on( "data", name => {
+					list.push( { type: "data", name } );
+
+					if ( !pausedBefore ) {
+						pausedBefore = true;
+
+						stream.pause();
+						setTimeout( () => {
+							list.should.be.Array().which.is.not.empty();
+							list[list.length - 1].type.should.be.equal( "full" );
+
+							stream.resume();
+						}, 1000 );
+					}
+				} );
+
+				stream.on( "full", () => {
+					list.push( { type: "full" } );
+				} );
+
+				stream.once( "end", () => {
+					list.should.be.Array().which.is.not.empty();
+					list[list.length - 1].type.should.not.be.equal( "full" );
+
+					resolve();
+				} );
+			} );
+		} );
+
+		test( "exposes same set of element in same order no matter stream was paused or not", function() {
+			let pausedCounter = 0;
+
+			return Promise.all( [
+				new Promise( resolve => {
+					const matches = [];
+					const stream = find( "..", { stream: true } );
+
+					stream.on( "data", name => {
+						matches.push( name );
+
+						if ( matches.length % 50 === 0 ) {
+							stream.pause();
+							pausedCounter++;
+							setTimeout( () => stream.resume(), 10 );
+						}
+					} );
+
+					stream.once( "end", () => resolve( matches ) );
+				} ),
+				new Promise( resolve => {
+					const matches = [];
+					const stream = find( "..", { stream: true } );
+
+					stream.on( "data", name => matches.push( name ) );
+					stream.once( "end", () => resolve( matches ) );
+				} ),
+			] )
+				.then( ( [ paused, unpaused ] ) => {
+					pausedCounter.should.be.above( 10 );
+
+					paused.should.be.Array();
+					unpaused.should.be.Array();
+
+					paused.length.should.be.equal( unpaused.length );
+
+					paused.should.be.eql( unpaused );
+				} );
+		} );
+
+		test( "instantly ends on cancelling iteration in filter", function() {
+			return new Promise( resolve => {
+				const matches = [];
+				let counter = 0;
+
+				const stream = find( "..", {
+					stream: true,
+					filter: function() {
+						if ( ++counter === 3 ) {
+							this.cancel();
+						}
+
+						return true;
+					},
+				} );
+
+				stream.on( "data", name => matches.push( name ) );
+				stream.once( "end", () => resolve( matches ) );
+			} )
+				.then( list => {
+					list.should.be.Array().which.has.length( 4 ); // additional record due to filter not invoked on base folder
+				} );
+		} );
+
+		test( "instantly ends on cancelling iteration in converter", function() {
+			return new Promise( resolve => {
+				const matches = [];
+				let counter = 0;
+
+				const stream = find( "..", {
+					stream: true,
+					converter: function() {
+						if ( ++counter === 3 ) {
+							this.cancel();
+						}
+
+						return true;
+					},
+				} );
+
+				stream.on( "data", name => matches.push( name ) );
+				stream.once( "end", () => resolve( matches ) );
+			} )
+				.then( list => {
+					list.should.be.Array().which.has.length( 3 ); // due to converter invoked even on base folder
+				} );
+		} );
+
+		test( "emits error and cancels iteration when filter callback is throwing", function() {
+			return new Promise( resolve => {
+				let error = null;
+				const stream = find( "..", {
+					stream: true,
+					filter: function() {
+						throw new Error( "!!EXCEPTION!!" );
+					},
+				} );
+
+				stream.on( "error", e => {
+					console.log( "error" );
+					error = e;
+				} );
+				stream.on( "end", () => {
+					console.log( "end", error );
+					resolve( error );
+				} );
+			} )
+				.then( error => {
+					error.should.be.instanceOf( Error );
+				} );
+		} );
 	} );
 
 	test( "provides local path name to filter callback on finding absolute path names, too", function() {
@@ -488,6 +788,60 @@ suite( "require( 'file-essentials' ).find", function() {
 						}
 
 						return localName;
+					},
+				} );
+			} )
+			.then( list => {
+				list.should.be.Array();
+				list.length.should.be.equal( 3 );
+			} );
+	} );
+
+	test( "does not process any further matches after `cancel()` has been invoked by filter and/or converter callback", function() {
+		// cancel iteration in filter
+		let count = 0;
+
+		return find( "..", {
+			minDepth: 1,
+			maxDepth: 3,
+			filter: function() {
+				count.should.not.be.aboveOrEqual( 3 );
+
+				if ( ++count === 3 ) {
+					this.cancel();
+				}
+
+				return true;
+			},
+			converter: function( name ) {
+				count.should.not.be.above( 3 );
+
+				return name;
+			},
+		} )
+			.then( list => {
+				list.should.be.Array();
+				list.length.should.be.equal( 3 );
+
+				let count = 0;
+
+				// cancel iteration in converter callback
+				return find( "..", {
+					minDepth: 1,
+					maxDepth: 3,
+					filter: function() {
+						count.should.not.be.aboveOrEqual( 3 );
+
+						return true;
+					},
+					converter: function( name ) {
+						count.should.not.be.aboveOrEqual( 3 );
+
+						if ( ++count === 3 ) {
+							this.cancel();
+						}
+
+						return name;
 					},
 				} );
 			} )
