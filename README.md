@@ -70,13 +70,16 @@ Finds all elements in a folder. Supported options are
 * **filter**: Provide a function invoked on every element for deciding whether to include in resulting list or not. The function is invoked with
 
    * any basically found element's path name relative to base folder,
+   
    * its absolute path name,
+   
    * the `Stats` instance retrieved on calling `fs.stat()` on element and
+   
    * the depth of current element (0 is selected folder, 1 is all its children, etc.)
 
   The function is expected to return boolean with `true` or `false`. It also may promise that result value. By returning or promising `true` the tested file or folder is considered match and gets collected in resulting list. By returning or promising `false` the tested file or folder is not collected. In addition, **find()**'s iteration isn't descending into any tested folder **filter** is returning `false` on and unless **skipFilteredFolder** is set `false` explicitly.
   
-  **Important:** The callback provided in **filter** is not invoked on base folder selected in first argument to `find()` for performance reasons as caller is expected to want its enumeration implicitly by calling `find()` in the first place.
+  **Important:** The callback provided in **filter** is not invoked on base folder unless setting option **filterSelf**, too. See there for further information.
   
 * **converter** may be callback function invoked with equivalent signature as described on **filter** before. The callback is mapping all found elements to some data eventually collected and included with promised result list. The return value is collected in resulting list instead of element's relative or absolute path name. By returning `null`, `undefined` or empty string here, no data is collected in result list on related file or folder.
 
@@ -94,10 +97,16 @@ Finds all elements in a folder. Supported options are
 
 * **stream**: By setting this option `find()` isn't returning promise but readable stream providing path name of every matching file or folder one by one. The stream may be paused resulting in paused iteration.
 
+* **filterSelf**: By default **filter** callback isn't invoked on selected base folder itself for performance reasons. `find()` assumes caller's implicit interest in descending into selected base folder by using `find()` in the first place. Setting this option `true` this assumption is disabled and **filter** callback is invoked on base folder, too.
+
+#### Passing Data From Callback to Callback
+ 
 > Any callback provided as **filter** or **converter** is invoked with some context object exposed as `this`, which
 >
 >  * is different for every tested file or folder
+>
 >  * is the same on calling **filter** and **converter** on same file or folder
+>
 >  * provides method `cancel()` to be called if either callback requests to cancel whole iteration of file system.
  
 This method is also exposed as `Find`.

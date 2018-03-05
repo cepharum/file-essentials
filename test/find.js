@@ -525,20 +525,133 @@ suite( "require( 'file-essentials' ).find", function() {
 			} );
 	} );
 
-	test( "does not check filter on provided pathname itself", function() {
+	test( "does not check filter on provided pathname itself by default", function() {
+		let found = 0;
+
 		return find( "..", {
 			filter: localName => {
 				localName.should.be.String().which.is.not.empty();
+
+				if ( localName === "." ) {
+					found++;
+				}
+
 				return true;
 			},
 		} )
 			.then( () => {
+				found.should.be.equal( 0 );
+
+				found = 0;
+
 				return find( "..", {
 					filter: localName => {
 						localName.should.be.String().which.is.not.empty();
+
+						if ( localName === "." ) {
+							found++;
+						}
 					},
 					skipFilteredFolder: false,
 				} );
+			} )
+			.then( () => {
+				found.should.be.equal( 0 );
+			} );
+	} );
+
+	test( "checks filter on provided pathname itself on demand", function() {
+		let found = 0;
+
+		return find( "..", {
+			filter: localName => {
+				localName.should.be.String().which.is.not.empty();
+
+				if ( localName === "." ) {
+					found++;
+				}
+
+				return true;
+			},
+			filterSelf: true,
+		} )
+			.then( () => {
+				found.should.be.equal( 1 );
+
+				found = 0;
+
+				return find( "..", {
+					filter: localName => {
+						localName.should.be.String().which.is.not.empty();
+
+						if ( localName === "." ) {
+							found++;
+						}
+					},
+					skipFilteredFolder: false,
+					filterSelf: true,
+				} );
+			} )
+			.then( () => {
+				found.should.be.equal( 1 );
+			} );
+	} );
+
+	test( "ignores request for filtering provided pathname itself due to minimum depth", function() {
+		let found = 0;
+
+		return find( "..", {
+			filter: localName => {
+				localName.should.be.String().which.is.not.empty();
+
+				if ( localName === "." ) {
+					found++;
+				}
+
+				return true;
+			},
+			filterSelf: true,
+			minDepth: 1,
+		} )
+			.then( () => {
+				found.should.be.equal( 0 );
+
+				found = 0;
+
+				return find( "..", {
+					filter: localName => {
+						localName.should.be.String().which.is.not.empty();
+
+						if ( localName === "." ) {
+							found++;
+						}
+					},
+					skipFilteredFolder: false,
+					filterSelf: true,
+					minDepth: 1,
+				} );
+			} )
+			.then( () => {
+				found.should.be.equal( 0 );
+			} );
+	} );
+
+	test( "does not descend into provided base folder if explicitly enabled filter requests it", function() {
+		return find( "..", {
+			filter: localName => localName !== ".",
+			filterSelf: true,
+		} )
+			.then( list => {
+				list.length.should.be.equal( 0 );
+
+				return find( "..", {
+					filter: localName => localName !== ".",
+					skipFilteredFolder: false,
+					filterSelf: true,
+				} );
+			} )
+			.then( list => {
+				list.length.should.be.above( 1 );
 			} );
 	} );
 
