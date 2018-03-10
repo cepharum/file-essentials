@@ -679,7 +679,13 @@ suite( "require( 'file-essentials' ).find", function() {
 
 	test( "does not descend into filtered folders by default", function() {
 		return find( "..", {
-			filter: ( localName, absoluteName, stat ) => stat.isDirectory() ? localName === "lib" : localName.endsWith( "rmdir.js" ),
+			filter: ( localName, absoluteName, stat ) => {
+				if ( stat.isDirectory() ) {
+					return localName === "lib";
+				}
+
+				return localName.endsWith( "rmdir.js" );
+			},
 		} )
 			.then( list => {
 				list.should.be.Array().which.has.length( 3 );
@@ -694,7 +700,13 @@ suite( "require( 'file-essentials' ).find", function() {
 
 	test( "descends into filtered folders on explicit demand", function() {
 		return find( "..", {
-			filter: ( localName, absoluteName, stat ) => stat.isDirectory() ? localName === "lib" : localName.endsWith( "rmdir.js" ),
+			filter: ( localName, absoluteName, stat ) => {
+				if ( stat.isDirectory() ) {
+					return localName === "lib";
+				}
+
+				return localName.endsWith( "rmdir.js" );
+			},
 			skipFilteredFolder: false,
 		} )
 			.then( list => {
@@ -869,7 +881,7 @@ suite( "require( 'file-essentials' ).find", function() {
 					minDepth: 1,
 					maxDepth: 3,
 					filter: localName => !localName.startsWith( "node_modules" ),
-					converter: ( local, full, stat, depth ) => depth > 1 ? null : `${depth}`,
+					converter: ( local, full, stat, depth ) => ( depth > 1 ? null : `${depth}` ),
 				} )
 					.then( reducedMatches => {
 						reducedMatches.should.be.Array().which.is.not.empty();
@@ -996,7 +1008,7 @@ suite( "require( 'file-essentials' ).find", function() {
 				list.should.be.Array();
 				list.length.should.be.equal( 3 );
 
-				let count = 0;
+				let count = 0; // eslint-disable-line no-shadow
 
 				// cancel iteration in converter callback
 				return find( "..", {
