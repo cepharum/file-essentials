@@ -79,13 +79,15 @@ Finds all elements in a folder. Supported options are
 
   The function is expected to return boolean with `true` or `false`. It also may promise that result value. By returning or promising `true` the tested file or folder is considered match and gets collected in resulting list. By returning or promising `false` the tested file or folder is not collected. In addition, **find()**'s iteration isn't descending into any tested folder **filter** is returning `false` on and unless **skipFilteredFolder** is set `false` explicitly.
   
-  **Important:** The callback provided in **filter** is not invoked on base folder unless setting option **filterSelf**, too. See there for further information.
+  > **Important:** The callback provided in **filter** is not invoked on base folder unless setting option **filterSelf**, too. See there for further information.
+  
+  > **Important:** The **filter** callback is invoked on folders prior to descending into them for enumerating contained elements. Thus, invocation per element may happen in different order than **converter** callback with the latter properly obeying option **depthFirst**, only.
   
 * **converter** may be callback function invoked with equivalent signature as described on **filter** before. The callback is mapping all found elements to some data eventually collected and included with promised result list. The return value is collected in resulting list instead of element's relative or absolute path name. By returning `null`, `undefined` or empty string here, no data is collected in result list on related file or folder.
 
-  Returning promise is okay, but in opposition to **filter** this doesn't defer processing of further elements implicitly.
+  Returning promise is okay, but in opposition to **filter** this doesn't defer processing of further elements implicitly unless option **waitForConverter** is set.
   
-  In opposition to **filter** any callback provided here is invoked on base folder provided in first argument of `find()`, too.
+  Also in opposition to **filter** any callback provided here is always invoked on base folder provided in first argument of `find()`, too.
   
   > By combining **filter** and **converter** it is possible to control what folders to descend into with **filter** and select files or folders to be part of resulting list with **converter**.
 
@@ -98,6 +100,8 @@ Finds all elements in a folder. Supported options are
 * **stream**: By setting this option `find()` isn't returning promise but readable stream providing path name of every matching file or folder one by one. The stream may be paused resulting in paused iteration.
 
 * **filterSelf**: By default **filter** callback isn't invoked on selected base folder itself for performance reasons. `find()` assumes caller's implicit interest in descending into selected base folder by using `find()` in the first place. Setting this option `true` this assumption is disabled and **filter** callback is invoked on base folder, too.
+
+* **waitForConverter**: By default promises returned by **converter** callback are collected in output w/o delaying further iteration. Set this option to switch this behaviour and wait for any promise returned by **converter** callback eventually collecting the promised value instead.
 
 #### Passing Data From Callback to Callback
  

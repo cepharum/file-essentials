@@ -1035,4 +1035,69 @@ suite( "require( 'file-essentials' ).find", function() {
 				list.length.should.be.equal( 3 );
 			} );
 	} );
+
+	test( "waits for promises returned by 'filter' by default", function() {
+		const matchesAsTested = [];
+
+		return find( "..", {
+			filterSelf: true,
+			filter: localName => {
+				matchesAsTested.push( localName );
+
+				if ( matchesAsTested.length % 1000 === 1 ) {
+					return new Promise( resolve => {
+						setTimeout( () => resolve( true ), 50 );
+					} );
+				}
+
+				return true;
+			}
+		} )
+			.then( matchesAsDelivered => {
+				matchesAsDelivered.should.eql( matchesAsTested );
+			} );
+	} );
+
+	test( "does not wait for promises returned by 'converter' by default", function() {
+		const matchesAsTested = [];
+
+		return find( "..", {
+			converter: localName => {
+				matchesAsTested.push( localName );
+
+				if ( matchesAsTested.length % 1000 === 1 ) {
+					return new Promise( resolve => {
+						setTimeout( () => resolve( true ), 50 );
+					} );
+				}
+
+				return true;
+			}
+		} )
+			.then( matchesAsDelivered => {
+				matchesAsDelivered.should.not.eql( matchesAsTested );
+			} );
+	} );
+
+	test( "waits for promises returned by 'converter' on demand", function() {
+		const matchesAsTested = [];
+
+		return find( "..", {
+			waitForConverter: true,
+			converter: localName => {
+				matchesAsTested.push( localName );
+
+				if ( matchesAsTested.length % 1000 === 1 ) {
+					return new Promise( resolve => {
+						setTimeout( () => resolve( localName ), 50 );
+					} );
+				}
+
+				return localName;
+			}
+		} )
+			.then( matchesAsDelivered => {
+				matchesAsDelivered.should.eql( matchesAsTested );
+			} );
+	} );
 } );
