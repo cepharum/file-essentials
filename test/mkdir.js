@@ -51,10 +51,18 @@ suite( "require( 'file-essentials' ).mkdir", function() {
 	} );
 
 	test( "is a function", function() {
-		Should( mkdir ).be.a.Function().which.has.length( 2 );
+		Should( mkdir ).be.a.Function().which.has.length( 1 );
 	} );
 
-	test( "does not throw on invocation", function() {
+	test( "does not throw on invocation w/o second argument", function() {
+		let promise;
+
+		( () => ( promise = mkdir( dataDir ) ) ).should.not.throw();
+
+		return promise;
+	} );
+
+	test( "does not throw on invocation w/ second argument", function() {
 		let promise;
 
 		( () => ( promise = mkdir( dataDir, [] ) ) ).should.not.throw();
@@ -62,8 +70,14 @@ suite( "require( 'file-essentials' ).mkdir", function() {
 		return promise;
 	} );
 
-	test( "returns promise resolved on having created all folders in desired path name", function() {
-		return mkdir( dataDir, [] ).should.be.Promise().which.is.resolvedWith( dataDir );
+	test( "returns promise resolved on having created all folders of solely provided path name", function() {
+		const solePath = Path.resolve( dataDir, "some", "sole", "sub", "folder" );
+
+		return mkdir( solePath ).should.be.Promise().which.is.resolvedWith( solePath );
+	} );
+
+	test( "returns promise resolved on having created all subfolders in desired path name", function() {
+		return mkdir( dataDir, [ "some", "further", "subfolder" ] ).should.be.Promise().which.is.resolvedWith( Path.resolve( dataDir, "some", "further", "subfolder" ) );
 	} );
 
 	test( "returns promise resolved with full pathname of created folder", function() {
