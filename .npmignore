@@ -1,0 +1,6 @@
+.idea
+.vscode
+.eslintrc
+.gitignore
+.travis.yml
+test
