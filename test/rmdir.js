@@ -28,6 +28,7 @@
 
 "use strict";
 
+const Crypto = require( "crypto" );
 const Path = require( "path" );
 
 const { suite, test } = require( "mocha" );
@@ -103,6 +104,63 @@ suite( "require( 'file-essentials' ).rmdir", function() {
 		return rmdir( someFile, { subsOnly: true } )
 			.then( list => {
 				list.should.be.Array().which.is.empty();
+			} );
+	} );
+} );
+
+suite( "Removing complex folders", function() {
+	this.timeout( 40000 );
+
+	const NumFiles = 1000;
+	const segments = [ "some", "list", "of", "segments", "to", "choose", "subset", "from", "for", "creating", "folder", "structure", "with", "limited", "randomness" ];
+	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+	setup( function() {
+		process.chdir( __dirname );
+
+		return mkdir( "..", "data/sub" )
+			.then( sub => new Promise( ( resolve, reject ) => {
+				const createFile = current => {
+					if ( current >= NumFiles ) {
+						resolve();
+					} else {
+						const path = new Array( 3 + Math.floor( Math.random() * 5 ) ).fill( "" )
+							.map( () => segments[Math.floor( Math.random() * segments.length )] );
+
+						const filename = new Array( 10 ).fill( "" )
+							.map( () => chars[Math.floor( Math.random() * chars.length )] )
+							.join( "" ) + ".bin";
+
+						mkdir( sub, path )
+							.then( fullPath => write( Path.resolve( fullPath, filename ), Crypto.randomBytes( 16384) ) )
+							.then( () => process.nextTick( createFile, current + 1 ) )
+							.catch( reject );
+					}
+				};
+
+				createFile( 0 );
+			} ) );
+	} );
+
+	teardown( function() {
+		return rmdir( "../data" );
+	} );
+
+	test( "removes many files in provided file including the folder itself", function() {
+		const baseFolder = Path.resolve( "..", "data/sub" );
+
+		return rmdir( baseFolder )
+			.then( list => {
+				list.length.should.be.greaterThan( NumFiles );
+			} );
+	} );
+
+	test( "removes many files in provided file omitting the folder itself", function() {
+		const baseFolder = Path.resolve( "..", "data/sub" );
+
+		return rmdir( baseFolder, { subsOnly: true } )
+			.then( list => {
+				list.length.should.be.greaterThan( NumFiles );
 			} );
 	} );
 } );
