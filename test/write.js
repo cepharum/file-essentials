@@ -28,7 +28,7 @@
 
 "use strict";
 
-const { suite, test } = require( "mocha" );
+const { suite, test, suiteSetup, suiteTeardown } = require( "mocha" );
 const Should = require( "should" );
 
 const { write, read, mkdir, rmdir } = require( "../" );

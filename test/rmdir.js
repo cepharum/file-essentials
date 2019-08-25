@@ -31,7 +31,7 @@
 const Crypto = require( "crypto" );
 const Path = require( "path" );
 
-const { suite, test } = require( "mocha" );
+const { suite, test, suiteSetup, setup, teardown } = require( "mocha" );
 const Should = require( "should" );
 
 const { mkdir, rmdir, write } = require( "../" );
@@ -132,7 +132,7 @@ suite( "Removing complex folders", function() {
 							.join( "" ) + ".bin";
 
 						mkdir( sub, path )
-							.then( fullPath => write( Path.resolve( fullPath, filename ), Crypto.randomBytes( 16384) ) )
+							.then( fullPath => write( Path.resolve( fullPath, filename ), Crypto.randomBytes( 16384 ) ) )
 							.then( () => process.nextTick( createFile, current + 1 ) )
 							.catch( reject );
 					}

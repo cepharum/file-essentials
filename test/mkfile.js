@@ -31,7 +31,7 @@
 const Path = require( "path" );
 const File = require( "fs" );
 
-const { suite, test } = require( "mocha" );
+const { suite, test, suiteSetup, suiteTeardown } = require( "mocha" );
 const Should = require( "should" );
 
 const { mkfile, mkdir, read, rmdir } = require( "../" );

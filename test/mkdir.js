@@ -30,7 +30,7 @@
 
 const Path = require( "path" );
 
-const { suite, test } = require( "mocha" );
+const { suite, test, suiteSetup, suiteTeardown } = require( "mocha" );
 const Should = require( "should" );
 
 const { mkdir, rmdir, write } = require( "../" );

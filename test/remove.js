@@ -28,10 +28,9 @@
 
 "use strict";
 
-const Crypto = require( "crypto" );
 const Path = require( "path" );
 
-const { suite, test } = require( "mocha" );
+const { suite, test, suiteSetup, setup, teardown } = require( "mocha" );
 const Should = require( "should" );
 
 const { mkdir, rmdir, write, remove } = require( "../" );

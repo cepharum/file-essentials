@@ -31,7 +31,7 @@
 const Path = require( "path" );
 const { Readable } = require( "stream" );
 
-const { suite, test } = require( "mocha" );
+const { suite, test, suiteSetup } = require( "mocha" );
 const Should = require( "should" );
 
 const { find } = require( "../" );
@@ -67,22 +67,22 @@ suite( "require( 'file-essentials' ).find", function() {
 		test( "is resolved with path names of all found elements", function() {
 			return find( ".." )
 				.then( list => {
-					list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+					const _list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
 
-					list.should.containEql( "lib/find.js" );
-					list.should.containEql( "test/.setup.js" );
-					list.should.containEql( "index.js" );
-					list.should.containEql( "node_modules/eslint-config-cepharum/index.js" );
+					_list.should.containEql( "lib/find.js" );
+					_list.should.containEql( "test/.setup.js" );
+					_list.should.containEql( "index.js" );
+					_list.should.containEql( "node_modules/eslint-config-cepharum/index.js" );
 				} );
 		} );
 
 		test( "is resolved with path names of all found elements in depth-last order by default", function() {
 			return find( ".." )
 				.then( list => {
-					list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+					const _list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
 
-					const a = list.indexOf( "lib" );
-					const b = list.indexOf( "lib/find.js" );
+					const a = _list.indexOf( "lib" );
+					const b = _list.indexOf( "lib/find.js" );
 
 					( a < b ).should.be.true();
 				} );
@@ -93,10 +93,10 @@ suite( "require( 'file-essentials' ).find", function() {
 				.then( list => {
 					list.should.be.Array().which.is.not.empty();
 
-					list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+					const _list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
 
-					const a = list.indexOf( "lib" );
-					const b = list.indexOf( "lib/find.js" );
+					const a = _list.indexOf( "lib" );
+					const b = _list.indexOf( "lib/find.js" );
 
 					( a < b ).should.be.false();
 				} );
@@ -107,10 +107,10 @@ suite( "require( 'file-essentials' ).find", function() {
 				.then( list => {
 					list.should.be.Array().which.is.not.empty();
 
-					list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+					const _list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
 
-					list.should.not.containEql( "lib/find.js" );
-					list.should.containEql( Path.resolve( "..", "lib/find.js" ).replace( /\\/g, Path.posix.sep ) );
+					_list.should.not.containEql( "lib/find.js" );
+					_list.should.containEql( Path.resolve( "..", "lib/find.js" ).replace( /\\/g, Path.posix.sep ) );
 				} );
 		} );
 
@@ -122,12 +122,12 @@ suite( "require( 'file-essentials' ).find", function() {
 				.then( list => {
 					list.should.be.Array().which.is.not.empty();
 
-					list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+					const _list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
 
-					list.should.not.containEql( "lib/find.js" );
-					list.should.not.containEql( "test/.setup.js" );
-					list.should.containEql( "index.js" );
-					list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
+					_list.should.not.containEql( "lib/find.js" );
+					_list.should.not.containEql( "test/.setup.js" );
+					_list.should.containEql( "index.js" );
+					_list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
 				} );
 		} );
 
@@ -499,12 +499,12 @@ suite( "require( 'file-essentials' ).find", function() {
 			.then( list => {
 				list.should.be.Array().which.is.not.empty();
 
-				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+				const _list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
 
-				list.should.not.containEql( Path.resolve( "..", "lib/find.js" ).replace( /\\/g, Path.posix.sep ) );
-				list.should.not.containEql( Path.resolve( "..", "test/.setup.js" ).replace( /\\/g, Path.posix.sep ) );
-				list.should.containEql( Path.resolve( "..", "index.js" ).replace( /\\/g, Path.posix.sep ) );
-				list.should.not.containEql( Path.resolve( "..", "node_modules/eslint-config-cepharum/index.js" ).replace( /\\/g, Path.posix.sep ) );
+				_list.should.not.containEql( Path.resolve( "..", "lib/find.js" ).replace( /\\/g, Path.posix.sep ) );
+				_list.should.not.containEql( Path.resolve( "..", "test/.setup.js" ).replace( /\\/g, Path.posix.sep ) );
+				_list.should.containEql( Path.resolve( "..", "index.js" ).replace( /\\/g, Path.posix.sep ) );
+				_list.should.not.containEql( Path.resolve( "..", "node_modules/eslint-config-cepharum/index.js" ).replace( /\\/g, Path.posix.sep ) );
 			} );
 	} );
 
@@ -516,12 +516,12 @@ suite( "require( 'file-essentials' ).find", function() {
 			.then( list => {
 				list.should.be.Array().which.is.not.empty();
 
-				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+				const _list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
 
-				list.should.not.containEql( "lib/find.js" );
-				list.should.not.containEql( "test/.setup.js" );
-				list.should.containEql( "index.js" );
-				list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
+				_list.should.not.containEql( "lib/find.js" );
+				_list.should.not.containEql( "test/.setup.js" );
+				_list.should.containEql( "index.js" );
+				_list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
 			} );
 	} );
 
@@ -662,18 +662,18 @@ suite( "require( 'file-essentials' ).find", function() {
 			.then( list => {
 				list.should.be.Array().which.is.not.empty();
 
-				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+				const _list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
 
-				list.should.not.containEql( "lib/find.js" );
-				list.should.not.containEql( "test/.setup.js" );
-				list.should.not.containEql( "index.js" );
-				list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
+				_list.should.not.containEql( "lib/find.js" );
+				_list.should.not.containEql( "test/.setup.js" );
+				_list.should.not.containEql( "index.js" );
+				_list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
 
-				list.should.containEql( "lib" );
-				list.should.containEql( "test" );
-				list.should.containEql( "." );
-				list.should.containEql( "node_modules/eslint-config-cepharum" );
-				list.should.containEql( "node_modules" );
+				_list.should.containEql( "lib" );
+				_list.should.containEql( "test" );
+				_list.should.containEql( "." );
+				_list.should.containEql( "node_modules/eslint-config-cepharum" );
+				_list.should.containEql( "node_modules" );
 			} );
 	} );
 
@@ -690,11 +690,11 @@ suite( "require( 'file-essentials' ).find", function() {
 			.then( list => {
 				list.should.be.Array().which.has.length( 3 );
 
-				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+				const _list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
 
-				list.should.containEql( "." );
-				list.should.containEql( "lib" );
-				list.should.containEql( "lib/rmdir.js" );
+				_list.should.containEql( "." );
+				_list.should.containEql( "lib" );
+				_list.should.containEql( "lib/rmdir.js" );
 			} );
 	} );
 
@@ -712,12 +712,12 @@ suite( "require( 'file-essentials' ).find", function() {
 			.then( list => {
 				list.should.be.Array().which.has.length( 4 );
 
-				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+				const _list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
 
-				list.should.containEql( "." );
-				list.should.containEql( "lib" );
-				list.should.containEql( "lib/rmdir.js" );
-				list.should.containEql( "test/rmdir.js" );
+				_list.should.containEql( "." );
+				_list.should.containEql( "lib" );
+				_list.should.containEql( "lib/rmdir.js" );
+				_list.should.containEql( "test/rmdir.js" );
 			} );
 	} );
 
@@ -728,18 +728,18 @@ suite( "require( 'file-essentials' ).find", function() {
 			.then( list => {
 				list.should.be.Array().which.is.not.empty();
 
-				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+				const _list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
 
-				list.should.not.containEql( "lib/find.js" );
-				list.should.not.containEql( "test/.setup.js" );
-				list.should.containEql( "index.js" );
-				list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
+				_list.should.not.containEql( "lib/find.js" );
+				_list.should.not.containEql( "test/.setup.js" );
+				_list.should.containEql( "index.js" );
+				_list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
 
-				list.should.containEql( "lib" );
-				list.should.containEql( "test" );
-				list.should.containEql( "." );
-				list.should.not.containEql( "node_modules/eslint-config-cepharum" );
-				list.should.containEql( "node_modules" );
+				_list.should.containEql( "lib" );
+				_list.should.containEql( "test" );
+				_list.should.containEql( "." );
+				_list.should.not.containEql( "node_modules/eslint-config-cepharum" );
+				_list.should.containEql( "node_modules" );
 			} );
 	} );
 
@@ -750,18 +750,18 @@ suite( "require( 'file-essentials' ).find", function() {
 			.then( list => {
 				list.should.be.Array().which.is.not.empty();
 
-				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+				const _list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
 
-				list.should.containEql( "lib/find.js" );
-				list.should.containEql( "test/.setup.js" );
-				list.should.not.containEql( "index.js" );
-				list.should.containEql( "node_modules/eslint-config-cepharum/index.js" );
+				_list.should.containEql( "lib/find.js" );
+				_list.should.containEql( "test/.setup.js" );
+				_list.should.not.containEql( "index.js" );
+				_list.should.containEql( "node_modules/eslint-config-cepharum/index.js" );
 
-				list.should.not.containEql( "lib" );
-				list.should.not.containEql( "test" );
-				list.should.not.containEql( "." );
-				list.should.containEql( "node_modules/eslint-config-cepharum" );
-				list.should.not.containEql( "node_modules" );
+				_list.should.not.containEql( "lib" );
+				_list.should.not.containEql( "test" );
+				_list.should.not.containEql( "." );
+				_list.should.containEql( "node_modules/eslint-config-cepharum" );
+				_list.should.not.containEql( "node_modules" );
 			} );
 	} );
 
@@ -772,18 +772,18 @@ suite( "require( 'file-essentials' ).find", function() {
 			.then( list => {
 				list.should.be.Array().which.is.not.empty();
 
-				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+				const _list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
 
-				list.should.containEql( "lib/find.js" );
-				list.should.containEql( "test/.setup.js" );
-				list.should.containEql( "index.js" );
-				list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
+				_list.should.containEql( "lib/find.js" );
+				_list.should.containEql( "test/.setup.js" );
+				_list.should.containEql( "index.js" );
+				_list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
 
-				list.should.containEql( "lib" );
-				list.should.containEql( "test" );
-				list.should.containEql( "." );
-				list.should.containEql( "node_modules/eslint-config-cepharum" );
-				list.should.containEql( "node_modules" );
+				_list.should.containEql( "lib" );
+				_list.should.containEql( "test" );
+				_list.should.containEql( "." );
+				_list.should.containEql( "node_modules/eslint-config-cepharum" );
+				_list.should.containEql( "node_modules" );
 			} );
 	} );
 
@@ -795,18 +795,18 @@ suite( "require( 'file-essentials' ).find", function() {
 			.then( list => {
 				list.should.be.Array().which.is.not.empty();
 
-				list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
+				const _list = list.map( i => i.replace( /\\/g, Path.posix.sep ) );
 
-				list.should.not.containEql( "lib/find.js" );
-				list.should.not.containEql( "test/.setup.js" );
-				list.should.containEql( "index.js" );
-				list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
+				_list.should.not.containEql( "lib/find.js" );
+				_list.should.not.containEql( "test/.setup.js" );
+				_list.should.containEql( "index.js" );
+				_list.should.not.containEql( "node_modules/eslint-config-cepharum/index.js" );
 
-				list.should.containEql( "lib" );
-				list.should.containEql( "test" );
-				list.should.not.containEql( "." );
-				list.should.not.containEql( "node_modules/eslint-config-cepharum" );
-				list.should.containEql( "node_modules" );
+				_list.should.containEql( "lib" );
+				_list.should.containEql( "test" );
+				_list.should.not.containEql( "." );
+				_list.should.not.containEql( "node_modules/eslint-config-cepharum" );
+				_list.should.containEql( "node_modules" );
 			} );
 	} );
 
