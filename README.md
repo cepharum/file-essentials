@@ -59,6 +59,12 @@ Writes content to file promising content written to file. The content is promise
 
 This method is also exposed as `Write`.
 
+### FileEssentials.remove( pathName ) : Promise\<(string)>
+
+Removes file selected by its path name. On success the given path name is promised. This method is a simple promisified version of `require( "fs" ).unlink()`.
+
+This method is also exposed as `Remove`.
+
 ### FileEssentials.find( baseFolder, [ options ] ) : Promise\<string[]>
 
 Finds all elements in a folder. Supported options are
