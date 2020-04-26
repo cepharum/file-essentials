@@ -159,12 +159,12 @@ declare module "file-essentials" {
      *
      * @param pathname pathname of element to remove
      * @param options behaviour customizations
-     * @returns promise for pathname of successfully removed file or folder as selected
+     * @returns promise for pathnames of successfully removed files and folders as selected
      */
-    export function rmdir( pathname: string, options?: RmDirOptions ): Promise<string>;
+    export function rmdir( pathname: string, options?: RmDirOptions ): Promise<string[]>;
 
     /** @borrows rmdir */
-    export function RmDir( pathname: string, options?: RmDirOptions ): Promise<string>;
+    export function RmDir( pathname: string, options?: RmDirOptions ): Promise<string[]>;
 
 
     /**
